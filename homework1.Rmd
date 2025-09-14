@@ -1,0 +1,131 @@
+---
+title: "Homework 1" 
+author: "Zichen Luo"
+fontsize: 12pt
+geometry: margin=1in
+urlcolor: black
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, highlight=FALSE)
+```
+
+## Problem 1
+
+### Part a
+
+```{r}
+p1a <- seq(513, 182371, by = 9)
+```
+
+### Part b
+
+```{r}
+p1b <- rep("1st", 921390)
+```
+
+### Part c
+
+```{r}
+p1c <- 37:76876
+```
+
+### Part d
+
+```{r}
+p1d <- rep(c("1st", "2nd", "3rd"), each = 928908)
+```
+
+### Part e
+
+```{r}
+p1e <- seq(155, -13875, by = -4)
+```
+
+### Part f
+
+```{r}
+p1f <- c(seq(50, 100, by = 10), seq(95, 75, by = -5))
+```
+
+### Part g
+
+```{r}
+p1g <- c(rep(20, 4), rep(30, 3), rep(40, 2), 50)
+```
+
+### Part h
+
+```{r}
+p1h <- rep(c(2, 1, 0), 5)
+```
+
+### Part i
+
+```{r}
+p1i <- c(seq(124, 68, by = -8), seq(63, 38, by = -5))
+```
+
+### Part j
+
+```{r}
+p1j <- rep(c("3rd", "2nd", "1st"), 2)
+```
+
+## Problem 2
+
+### Part a
+
+```{r}
+p2a <- pnorm(29.43, mean = 63, sd = 12, lower.tail = TRUE)
+```
+
+### Part b
+
+```{r}
+p2b <- qnorm(0.05, mean = 63, sd = 12, lower.tail = TRUE)
+```
+
+### Part c
+
+```{r}
+prob_over_90 <- pnorm(90, mean = 63, sd = 12, lower.tail = FALSE)
+p2c <- 28000 * prob_over_90
+```
+
+## Problem 3
+
+### Part a
+
+```{r}
+p3a <- 1 - pbinom(0, size = 10, prob = 0.1)
+```
+
+### Part b
+
+```{r}
+probs <- sapply(1:10, function(x) pbinom(x-1, size = 10, prob = 0.1, lower.tail = FALSE))
+p3b <- round(probs, 3)
+```
+
+## Problem 4
+
+```{r}
+myList <- list(
+  Name = "Taylor Brown",
+  Department = "Statistics",
+  Description = "He's the best",
+  Courses = c(Course1 = "STAT 3080", Course2 = "STAT 2559"),
+  ActiveTeach = c(Course1 = TRUE, Course2 = FALSE),
+  Enr = list(
+    Course1 = c(75, 90, 90),
+    Course2 = 5
+  ),
+  Days = list(
+    Course1 = matrix(c("Monday", "Tuesday", "Tuesday", "Wednesday", "Thursday", "Thursday"), 
+                     nrow = 3, ncol = 2),
+    Course2 = c("Tuesday", "Thursday")
+  )
+)
+```
