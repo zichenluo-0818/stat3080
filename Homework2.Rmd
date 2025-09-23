@@ -1,0 +1,130 @@
+---
+title: "Homework 3"
+author: "Zichen Luo"
+fontsize: 12pt
+output:
+  html_document:
+    df_print: paged
+urlcolor: black
+geometry: margin=1in
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, highlight=FALSE)
+```
+
+
+```{r}
+commutes <- matrix(c(29,38,31,34,36, 27,32,44,37,38), ncol=2, byrow=FALSE)
+rownames(commutes) <- c("Monday","Tuesday","Wednesday","Thursday","Friday")
+colnames(commutes) <- c("Week1","Week2")
+```
+
+```{r}
+secondIsFaster <- commutes[,"Week2"] < commutes[,"Week1"]
+aveTimes <- rowMeans(commutes)
+```
+
+
+```{r}
+myDiff <- commutes - 35
+colnames(myDiff) <- colnames(commutes); rownames(myDiff) <- rownames(commutes)
+```
+
+
+```{r}
+aveDifferences <- colMeans(myDiff)
+maxDelays <- apply(myDiff, 2, max)
+```
+
+
+```{r}
+daysOfTheWeek <- rownames(commutes)[commutes[,"Week2"] <= 30]
+partI <- colSums(commutes <= 35)
+fastDays <- rownames(commutes)[commutes[,"Week1"] == min(commutes[,"Week1"])]
+```
+
+
+```{r}
+same_sign <- (myDiff[,"Week1"] <= 0 & myDiff[,"Week2"] <= 0) |
+             (myDiff[,"Week1"]  > 0 & myDiff[,"Week2"]  > 0)
+similarSub <- myDiff[same_sign, ]
+```
+
+
+```{r}
+list(commutes=commutes, secondIsFaster=secondIsFaster, aveTimes=aveTimes,
+     myDiff=myDiff, aveDifferences=aveDifferences, maxDelays=maxDelays,
+     daysOfTheWeek=daysOfTheWeek, partI=partI, fastDays=fastDays,
+     similarSub=similarSub)
+```
+
+```{r}
+library(car)
+data("Davis", package="car")
+```
+
+```{r}
+weight.metric <- Davis[c("weight","repwt")]
+weight.imp <- data.frame(rec.weight=weight.metric$weight*2.2,
+                         rep.weight=weight.metric$repwt*2.2)
+```
+
+```{r}
+height.metric <- Davis[c("height","repht")]
+height.imp <- data.frame(rec.height=round(height.metric$height/2.54,1),
+                         rep.height=round(height.metric$repht/2.54,1))
+```
+
+```{r}
+Davis.imp <- data.frame(
+  sex=Davis$sex,
+  rec.weight=weight.imp$rec.weight,
+  rep.weight=weight.imp$rep.weight,
+  rec.height=height.imp$rec.height,
+  rep.height=height.imp$rep.height
+)
+```
+
+
+```{r}
+numMissing <- colSums(is.na(Davis.imp))
+numBadThings <- sum(!complete.cases(Davis.imp))
+mySubset <- Davis.imp$sex[!complete.cases(Davis.imp)]
+```
+
+```{r}
+list(head_weight_metric=head(weight.metric),
+     head_weight_imp=head(weight.imp),
+     head_height_metric=head(height.metric),
+     head_height_imp=head(height.imp),
+     head_Davis_imp=head(Davis.imp),
+     numMissing=numMissing,
+     numBadThings=numBadThings,
+     mySubset=head(mySubset))
+```
+
+
+
+```{r}
+name      <- c("Mercury","Venus","Earth","Mars","Jupiter","Saturn","Uranus","Neptune")
+distance  <- c(0.39,0.72,1.00,1.52,5.20,9.54,19.18,30.06)
+type      <- c(rep("Terrestrial",4), rep("Gas",4))
+diameter  <- c(0.382,0.949,1.000,0.532,11.209,9.449,4.007,3.883)
+rotation  <- c(58.64,-243.02,1.00,1.03,0.41,0.43,-0.72,0.67)
+rings     <- c(rep("No",4), rep("Yes",4))
+moons     <- c("None","None","One","TwoPlus","TwoPlus","TwoPlus","TwoPlus","TwoPlus")
+
+planet_df <- data.frame(name,distance,type,diameter,rotation,rings,moons,
+                        row.names=name, stringsAsFactors=FALSE)
+
+smolPlanets <- subset(planet_df, diameter < 2)
+leDistances <- planet_df$distance[planet_df$rotation < 0]
+bigPlanets  <- subset(planet_df, diameter > 1, select=c(name,distance,type))
+manyMoons   <- subset(planet_df, moons=="TwoPlus", select=c(name,rings))
+
+list(planet_df=planet_df, smolPlanets=smolPlanets, leDistances=leDistances,
+     bigPlanets=bigPlanets, manyMoons=manyMoons)
+
+```
+
