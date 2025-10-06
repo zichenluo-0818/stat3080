@@ -1,0 +1,169 @@
+---
+title: "Homework 4"
+author: "Zichen Luo"
+fontsize: 12pt
+output:
+  html_document:
+    df_print: paged
+urlcolor: black
+geometry: margin=1in
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, warning = FALSE, message = FALSE)
+library(tidyverse)
+```
+
+## Problem 1
+
+### Part a
+```{r}
+# Read in the data file
+fatal <- read.csv("fatal_accidents.csv", stringsAsFactors = FALSE)
+str(fatal)
+```
+
+### Part b
+```{r}
+# Create a list that separates the data set by state
+state.list <- split(fatal, fatal$State)
+```
+
+### Part c
+```{r}
+# Use apply function to obtain the first three rows of each element
+listBabyChunks <- lapply(state.list, function(x) head(x, 3))
+listBabyChunks[[1]]
+```
+
+### Part d
+```{r}
+# Create tables showing percentage of accidents on each day of the week
+accidentsBreakdown <- lapply(state.list, function(x) {
+  day_table <- table(x$Day.of.week)
+  percentages <- round(prop.table(day_table) * 100, 1)
+  return(percentages)
+})
+accidentsBreakdown[['West Virginia']]
+```
+
+### Part e
+
+## Question 1 Part E Free Response
+
+From the tables created in part d, we can observe that:
+
+- Accidents are not evenly distributed across the week
+- Most states show higher accident rates on weekends (days 6 and 7, Friday and Saturday)
+- In West Virginia specifically, Saturday (day 6) has the highest percentage at 21.0%
+- Weekdays generally show more consistent and lower percentages
+- This pattern likely reflects increased recreational travel and social activities on weekends
+
+### Part f
+```{r}
+# Create tables showing accidents by day of week and number of vehicles
+accidentsBreakdown2 <- lapply(state.list, function(x) {
+  table(x$Day.of.week, x$Vehicle.count)
+})
+accidentsBreakdown2[['District of Columbia']]
+```
+
+### Part g
+
+## Question 1 Part g Free Response
+
+To improve the presentation of tables in part f:
+
+- Add row and column totals to see overall patterns more easily
+- Convert counts to percentages within each row to compare vehicle involvement across days
+- Add row names that show actual day names (Sunday, Monday, etc.) instead of numbers
+- Consider visualizing the data as a heatmap to show patterns more clearly
+- Include marginal distributions to see which vehicle counts are most common overall
+
+## Problem 2
+
+### Part a
+```{r}
+# Create a copy and add People.count column
+fatal2 <- fatal %>%
+  mutate(People.count = People.count.IN + People.count.OUT)
+head(fatal2)
+```
+
+### Part b
+```{r}
+# Calculate average number of vehicles and people by state
+byState <- fatal2 %>%
+  group_by(State) %>%
+  summarise(
+    Vehicle.mean = mean(Vehicle.count),
+    Person.mean = mean(People.count)
+  ) %>%
+  arrange(State)
+head(byState)
+```
+
+### Part c
+```{r}
+# Calculate min, mean, and max vehicles by state
+byState2 <- fatal2 %>%
+  group_by(State) %>%
+  summarise(
+    Vehicle.min = min(Vehicle.count),
+    Vehicle.mean = mean(Vehicle.count),
+    Vehicle.max = max(Vehicle.count)
+  ) %>%
+  arrange(State)
+head(byState2)
+```
+
+### Part d
+
+## Question 2 Part D Free Response
+
+From the tables in parts b and c, we can observe:
+
+- District of Columbia has the highest average number of vehicles (1.68) and people (2.75) per accident
+- West Virginia has the lowest averages for both vehicles (1.51) and people (2.15)
+- All states have a minimum of 1 vehicle per accident, which makes sense
+- Maximum vehicles involved ranges from 5 (DC and WV) to 10 (North Carolina), showing rare but extreme multi-vehicle accidents
+- The relatively low averages (1.5-1.7 vehicles) suggest most fatal accidents involve single vehicles or two-vehicle collisions
+- Average people per accident is close to 2 across all states, suggesting most fatal accidents involve few individuals
+
+### Part e
+```{r}
+# Display number of accidents in Virginia by month
+virginiaByMonth <- fatal2 %>%
+  filter(State == "Virginia") %>%
+  group_by(Month) %>%
+  summarise(Month.total = n())
+virginiaByMonth
+```
+
+### Part f
+```{r}
+# Calculate median and mean vehicles for Virginia summer months by day of week
+byMonthAndWeekday <- fatal2 %>%
+  filter(State == "Virginia", Month %in% 6:8) %>%
+  group_by(Month, Day.of.week) %>%
+  summarise(
+    Vehicle.med = median(Vehicle.count),
+    Vehicle.mean = mean(Vehicle.count),
+    .groups = 'drop_last'
+  )
+byMonthAndWeekday
+```
+
+### Part g
+
+## Question 2 Part G Free Response
+
+From the tables in parts e and f, we can observe:
+
+- Fatal accidents in Virginia show seasonal variation, with October having the most (108) and February the fewest (47)
+- Summer months (June-August) show elevated accident counts (65, 100, and 77 respectively)
+- July is particularly dangerous with 100 fatal accidents
+- During summer months, the median number of vehicles is often 1-2, with means slightly higher
+- Weekends in summer tend to have higher mean vehicle counts (e.g., June day 6 at 1.73)
+- The difference between median and mean suggests some multi-vehicle accidents skew the average upward
+- Day-to-day variation within each summer month suggests different risk patterns throughout the week
