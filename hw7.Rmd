@@ -1,0 +1,234 @@
+---
+title: "Homework 7"
+author: "Zichen Luo"
+fontsize: 12pt
+output:
+  html_document:
+    df_print: paged
+urlcolor: black
+geometry: margin=1in
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+set.seed(123)  # For reproducibility
+```
+
+## Problem 1
+
+```{r problem1}
+# Plot the density curve of chi-squared distribution with 2 degrees of freedom
+library(ggplot2)
+
+x <- seq(0, 10, length.out = 1000)
+y <- dchisq(x, df = 2)
+
+myPlot <- ggplot(data.frame(x = x, y = y), aes(x = x, y = y)) +
+  geom_line(color = "blue", size = 1) +
+  labs(title = "Chi-squared Distribution with 2 Degrees of Freedom",
+       x = "x",
+       y = "Density") +
+  theme_minimal()
+
+print(myPlot)
+```
+
+**Shape description:** The chi-squared distribution with 2 degrees of freedom is right-skewed with a mode at 0. The density starts at a maximum value when x approaches 0 from the right, then decreases exponentially as x increases.
+
+## Problem 2
+
+```{r problem2}
+# Population parameters
+pop_mean <- 2
+pop_sd <- 2
+n_reps <- 10000
+sample_sizes <- c(8, 23, 52)
+alpha <- 0.05
+
+# Part a: Two-sided z-test
+do.two.sided.test <- function(n) {
+  sample_data <- rchisq(n, df = 2)
+  z_stat <- (mean(sample_data) - pop_mean) / (pop_sd / sqrt(n))
+  p_value <- 2 * pnorm(-abs(z_stat))
+  return(p_value < alpha)
+}
+
+z.two <- sapply(sample_sizes, function(n) {
+  mean(replicate(n_reps, do.two.sided.test(n)))
+})
+
+# Part b: Left-sided z-test
+do.left.sided.test <- function(n) {
+  sample_data <- rchisq(n, df = 2)
+  z_stat <- (mean(sample_data) - pop_mean) / (pop_sd / sqrt(n))
+  p_value <- pnorm(z_stat)
+  return(p_value < alpha)
+}
+
+z.left <- sapply(sample_sizes, function(n) {
+  mean(replicate(n_reps, do.left.sided.test(n)))
+})
+
+# Part c: Right-sided z-test
+do.right.sided.test <- function(n) {
+  sample_data <- rchisq(n, df = 2)
+  z_stat <- (mean(sample_data) - pop_mean) / (pop_sd / sqrt(n))
+  p_value <- 1 - pnorm(z_stat)
+  return(p_value < alpha)
+}
+
+z.right <- sapply(sample_sizes, function(n) {
+  mean(replicate(n_reps, do.right.sided.test(n)))
+})
+
+print(z.two)
+print(z.left)
+print(z.right)
+```
+
+## Problem 3
+
+```{r problem3}
+prob3Mat <- matrix(c(z.two, z.left, z.right),
+                   nrow = length(z.two),
+                   ncol = 3,
+                   byrow = FALSE)
+colnames(prob3Mat) <- c("two", "left", "right")
+rownames(prob3Mat) <- paste("n =", sample_sizes)
+
+print(prob3Mat)
+```
+
+**Conclusions:** The empirical Type I error rates for the z-test show that:
+- For small sample sizes (n=8), the test performs poorly because the chi-squared distribution is highly non-normal
+- As sample size increases, the empirical Type I error rates approach the nominal significance level of 0.05
+- The two-sided test tends to have Type I error closer to 0.05 than the one-sided tests for smaller samples
+- The Central Limit Theorem helps improve performance as n increases
+
+## Problem 4
+
+```{r problem4}
+# Part a: Two-sided t-test
+do.two.sided.t.test <- function(n) {
+  sample_data <- rchisq(n, df = 2)
+  t_stat <- (mean(sample_data) - pop_mean) / (sd(sample_data) / sqrt(n))
+  p_value <- 2 * pt(-abs(t_stat), df = n - 1)
+  return(p_value < alpha)
+}
+
+t.two <- sapply(sample_sizes, function(n) {
+  mean(replicate(n_reps, do.two.sided.t.test(n)))
+})
+
+# Part b: Left-sided t-test
+do.left.sided.t.test <- function(n) {
+  sample_data <- rchisq(n, df = 2)
+  t_stat <- (mean(sample_data) - pop_mean) / (sd(sample_data) / sqrt(n))
+  p_value <- pt(t_stat, df = n - 1)
+  return(p_value < alpha)
+}
+
+t.left <- sapply(sample_sizes, function(n) {
+  mean(replicate(n_reps, do.left.sided.t.test(n)))
+})
+
+# Part c: Right-sided t-test
+do.right.sided.t.test <- function(n) {
+  sample_data <- rchisq(n, df = 2)
+  t_stat <- (mean(sample_data) - pop_mean) / (sd(sample_data) / sqrt(n))
+  p_value <- 1 - pt(t_stat, df = n - 1)
+  return(p_value < alpha)
+}
+
+t.right <- sapply(sample_sizes, function(n) {
+  mean(replicate(n_reps, do.right.sided.t.test(n)))
+})
+
+print(t.two)
+print(t.left)
+print(t.right)
+```
+
+## Problem 5
+
+```{r problem5}
+prob5Mat <- matrix(c(t.two, t.left, t.right),
+                   nrow = length(t.two),
+                   ncol = 3,
+                   byrow = FALSE)
+colnames(prob5Mat) <- c("two", "left", "right")
+rownames(prob5Mat) <- paste("n =", sample_sizes)
+
+print(prob5Mat)
+```
+
+**Conclusions:** The empirical Type I error rates for the t-test show that:
+- The t-test is more robust to violations of normality than the z-test, especially for small sample sizes
+- The Type I error rates are closer to the nominal 0.05 level even for n=8
+- The t-test accounts for uncertainty in estimating the standard deviation, making it more appropriate when the population standard deviation is unknown
+- As sample size increases, t-test performance continues to improve and approaches the nominal level
+
+## Problem 6
+
+```{r problem6}
+# Part a: Two-sided "bad" z-test (using sample SD instead of population SD)
+do.two.sided.bad.test <- function(n) {
+  sample_data <- rchisq(n, df = 2)
+  z_stat <- (mean(sample_data) - pop_mean) / (sd(sample_data) / sqrt(n))
+  p_value <- 2 * pnorm(-abs(z_stat))
+  return(p_value < alpha)
+}
+
+zt.two <- sapply(sample_sizes, function(n) {
+  mean(replicate(n_reps, do.two.sided.bad.test(n)))
+})
+
+# Part b: Left-sided "bad" z-test
+do.left.sided.bad.test <- function(n) {
+  sample_data <- rchisq(n, df = 2)
+  z_stat <- (mean(sample_data) - pop_mean) / (sd(sample_data) / sqrt(n))
+  p_value <- pnorm(z_stat)
+  return(p_value < alpha)
+}
+
+zt.left <- sapply(sample_sizes, function(n) {
+  mean(replicate(n_reps, do.left.sided.bad.test(n)))
+})
+
+# Part c: Right-sided "bad" z-test
+do.right.sided.bad.test <- function(n) {
+  sample_data <- rchisq(n, df = 2)
+  z_stat <- (mean(sample_data) - pop_mean) / (sd(sample_data) / sqrt(n))
+  p_value <- 1 - pnorm(z_stat)
+  return(p_value < alpha)
+}
+
+zt.right <- sapply(sample_sizes, function(n) {
+  mean(replicate(n_reps, do.right.sided.bad.test(n)))
+})
+
+print(zt.two)
+print(zt.left)
+print(zt.right)
+```
+
+## Problem 7
+
+```{r problem7}
+prob7Mat <- matrix(c(zt.two, zt.left, zt.right),
+                   nrow = length(zt.two),
+                   ncol = 3,
+                   byrow = FALSE)
+colnames(prob7Mat) <- c("two", "left", "right")
+rownames(prob7Mat) <- paste("n =", sample_sizes)
+
+print(prob7Mat)
+```
+
+**Conclusions:** The empirical Type I error rates for the incorrectly conducted z-test (using sample SD) show that:
+- This "bad" z-test performs very similarly to the correct t-test from Problem 4
+- For small samples, the Type I error rates are inflated compared to the nominal 0.05 level
+- This demonstrates why using the sample standard deviation requires using the t-distribution rather than the normal distribution
+- The results highlight the importance of using the correct test statistic distribution
+- As sample size increases, the difference between the normal and t-distribution becomes negligible, so the "bad" z-test converges to appropriate Type I error rates
+```
