@@ -1,0 +1,67 @@
+---
+title: "hw8"
+output: pdf_document
+date: "2025-11-12"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+1a
+```{r}
+set.seed(42)
+american <- read.csv("american_delays.csv")[,1]
+B <- 10000
+boot_samp <- replicate(B, sample(american, replace = TRUE), simplify = TRUE)
+samp_IQR <- IQR(american)
+boot_IQR <- apply(boot_samp, 2, IQR)
+err_sort <- sort(boot_IQR - samp_IQR)
+p05 <- as.integer(B * 0.05)
+p95 <- as.integer(B * 0.95)
+boot_IQR_ci <- samp_IQR - err_sort[c(p95, p05)]
+boot_IQR_ci
+```
+
+b
+```{r}
+gottaScootch <- TRUE
+```
+
+2a
+```{r}
+set.seed(42)
+southwest <- read.csv("southwest_delays.csv")[,1]
+B <- 10000
+boot_samp2 <- replicate(B, sample(southwest, replace = TRUE), simplify = TRUE)
+samp_80th <- quantile(southwest, 0.8)
+boot_q80 <- apply(boot_samp2, 2, function(x) quantile(x, 0.8))
+boot_q80_null <- boot_q80 - mean(boot_q80)
+pval <- mean(boot_q80_null >= samp_80th)
+pval
+
+# Because 0.0156< 0.05, there is evidence that the 80th percentile of arrival delay lengths is a late arrival.
+```
+
+b
+```{r}
+# My conclusion in part (a) is not indisputable. Although the p-value (0.0156< 0.05) suggests a statistically significant result, the bootstrap test depends on the observed sample of only 16 flights, which may not fully represent all Southwest flights or other travel days. Sampling variability, non-normality, and outliers could influence the bootstrap distribution and make our inference uncertain. Thus, while the evidence supports that the 80th percentile of arrival delays is a late arrival, the conclusion is not indisputable.
+```
+
+3
+```{r}
+set.seed(42)
+qfun <- function(x) quantile(x, 0.9)
+test.stat <- qfun(southwest) - qfun(american)
+pool <- c(southwest, american)
+perm_once <- function() {
+perm <- sample(pool)
+qfun(perm[1:length(southwest)]) - qfun(perm[(length(southwest) + 1):length(pool)])
+}
+B <- 10000
+null_sims <- replicate(B, perm_once(), simplify = TRUE)
+center <- mean(null_sims)
+pval2 <- mean(abs(null_sims - center) >= abs(test.stat - center))
+pval2
+```
+
